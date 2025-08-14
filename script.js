@@ -28,7 +28,8 @@ function disableBodyScroll()
 }
 function enableBodyScroll()
 {
-  if (bodyScrollLockCount <= 0) return;
+  if (bodyScrollLockCount <= 0) 
+    return;
 
   bodyScrollLockCount--;
 
