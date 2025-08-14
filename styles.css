@@ -71,17 +71,27 @@ p
 /*#endregion CSS Reset*/
 
 :root {
-    --text-color-dark: #222222;
+    --body-background: #f8fafc;
 
-    --button-background-default: oklch(92.8% 0.006 264.531);
-    --button-background-default-strong: oklch(92.8% 0.006 264.531);
-    --button-background-primary: oklch(68.5% 0.169 237.323);
-    --button-background-primary-strong: oklch(58.8% 0.158 241.966);
+    --text-color-dark: #222222;
+    --text-color-light: #eeeeee;
+    --text-color-muted: #99a1af;
+        
+    --shadow-sm: 0 1px 2px #10182814;
+    --shadow-md: 0 6px 16px #1018281f;
+    --shadow-lg: 0 12px 24px #10182829;
+
+    --button-color-default: #f3f4f6;
+    --button-color-default-hover: #ffffff;
+    --button-color-default-active: #ffffff;
+    --button-color-primary: #2b7fff;
+    --button-color-primary-hover: #155dfb;
+    --button-color-primary-active: #1353dd;
 }
 
 body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    background-color: #eeeeee;
+    background: var(--body-background);
     color: #222222 !important;
 }
 
@@ -99,24 +109,85 @@ main div {
 }
 
 button {
-    padding: 1rem;
+    padding: 0.9rem 1rem;
     text-align: center;
     appearance: none;
     outline: none;
-    border: 1px solid oklch(87.2% 0.01 258.338);
+    border: 1px solid #d1d5db;
     cursor: pointer;
-    border-radius: 7px;
+    line-height: 1;
+    border-radius: 6px;
     font-size: 1rem;
-    box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
-    background-color: var(--button-background-default);
+    background-color: var(--button-color-default);
     transition: all 0.2s ease-out;
 }
-
 button:hover {
-    background-color: #FFFFFF;
-    border-color: var(--button-background-primary);
+    background-color: var(--button-color-default-hover);
+    border-color: var(--button-color-primary);
+}
+button:active {
+    background-color: var(--button-color-default-active);
 }
 
-button:active {
-    transform: scale(0.99);
+.buttonPrimary {
+    background-color: var(--button-color-primary);
+    border-color: var(--button-color-primary);
+    color: var(--text-color-light);
 }
+.buttonPrimary:hover {
+    background-color: var(--button-color-primary-hover);
+    border-color: var(--button-color-primary-hover);
+}
+.buttonPrimary:active {
+    background-color: var(--button-color-primary-active);
+}
+
+/*#region Dialogs*/
+.dialogWrapper
+{
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  z-index: -100;
+  pointer-events: none;
+  transition: opacity 0.2s ease-out;
+}
+
+.dialog
+{
+  background-color: #ffffff;
+  padding: 24px 28px;
+  border-radius: 16px;
+  box-shadow: 0 12px 24px var(--shadow-lg);
+  width: clamp(320px, 35vw, 512px);
+  text-align: center;
+  color: var(--text-color-dark);
+}
+
+.dialog h2
+{
+  font-size: 1.5rem;
+  margin: 0 0 16px 0;
+  font-weight: 600;
+}
+
+.dialog p
+{
+  margin: 0 0 24px 0;
+  color: var(--text-color-muted);
+}
+
+.dialog button {
+    width: 100%;
+}
+
+.dialogButtonGroup
+{
+  display: flex;
+  gap: 1rem;
+}
+/*#endregion Dialogs*/

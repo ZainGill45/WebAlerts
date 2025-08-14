@@ -9,10 +9,27 @@
 <body>
     <main>
         <div>
-            <button type="button">Open Alert</button>
-            <button type="button">Open Confirmation</button>
+            <button type="button" id="openAlertDialogButton">Open Alert</button>
+            <button type="button" class="buttonPrimary" id="openConfirmationDialogButton">Open Confirmation</button>
         </div>
     </main>
+    <div class="dialogWrapper" id="alertDialog">
+      <div class="dialog">
+        <h2>Alert Dialog</h2>
+        <p></p>
+        <button type="button" id="closeAlertDialog">Close</button>
+      </div>
+    </div>
+    <div class="dialogWrapper" id="confirmationDialog">
+      <div class="dialog">
+        <h2>Confirmation Alert</h2>
+        <p></p>
+        <div class="dialogButtonGroup">
+          <button type="button" id="closeConfirmationDialog">Close</button>
+          <button type="button" class="buttonPrimary" id="confirmConfirmationDialog">Confirm</button>
+        </div>
+      </div>
+    </div>
     <script src="script.js"></script>
 </body>
 </html>
