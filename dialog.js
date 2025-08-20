@@ -61,7 +61,7 @@ class DialogManager {
 
         // Button styling based on type
         const getButtonClasses = (type, customClass) => {
-            const baseClasses = 'w-full px-4 py-3 mt-4 text-center border border-gray-300 cursor-pointer select-none rounded-md text-base transition-all duration-200 ease-out  focus:scale-98';
+            const baseClasses = 'w-full px-4 py-3 text-center border border-gray-300 cursor-pointer select-none rounded-md text-base transition-all duration-200 ease-out  focus:scale-98';
             
             if (customClass) return `${baseClasses} ${customClass}`;
             

@@ -4,110 +4,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <title>Enhanced Web Dialogs</title>
-  <style>
-    /*#region CSS Reset*/
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-    }
-
-    html {
-      -moz-text-size-adjust: none;
-      -webkit-text-size-adjust: none;
-      text-size-adjust: none;
-    }
-
-    body,
-    h1,
-    h2,
-    h3,
-    h4,
-    p,
-    figure,
-    blockquote,
-    dl,
-    dd {
-      margin-block-end: 0;
-    }
-
-    ul[role="list"],
-    ol[role="list"] {
-      list-style: none;
-    }
-
-    img,
-    picture,
-    video,
-    canvas,
-    svg {
-      max-width: 100%;
-      display: block;
-    }
-
-    input,
-    button,
-    textarea,
-    select {
-      font-family: inherit;
-      font-size: inherit;
-    }
-
-    textarea:not([rows]) {
-      min-height: 10em;
-    }
-
-    :target {
-      scroll-margin-block: 5ex;
-    }
-
-    p {
-      text-wrap: pretty;
-    }
-    /*#endregion CSS Reset*/
-  </style>
 </head>
 
 <body class="bg-slate-50 text-gray-900 font-sans">
-  <main class="w-full min-h-screen flex justify-center items-center flex-col gap-8">
+  <main class="w-full min-h-screen flex justify-center items-center flex-col gap-6">
     <h1 class="text-3xl font-bold text-gray-800">Dialog System</h1>
 
-    <div class="flex gap-4 flex-wrap justify-center">
+    <div class="w-lg flex gap-3 flex-wrap justify-center">
       <button type="button" id="simpleAlertBtn"
         class="px-4 py-3 text-center border border-gray-300 cursor-pointer rounded-md text-base bg-gray-50 transition-all duration-200 ease-out hover:bg-white hover:border-blue-600 focus:scale-98 active:bg-white select-none">Simple
         Alert</button>
-
       <button type="button" id="basicConfirmationBtn"
         class="px-4 py-3 text-center border border-blue-600 cursor-pointer rounded-md text-base bg-blue-600 text-white transition-all duration-200 ease-out hover:bg-blue-700 hover:border-blue-700 focus:scale-98 active:bg-blue-800 select-none">
         Basic Confirmation
       </button>
-
       <button type="button" id="dangerousActionBtn"
         class="px-4 py-3 text-center border border-red-600 cursor-pointer rounded-md text-base bg-red-600 text-white transition-all duration-200 ease-out hover:bg-red-700 hover:border-red-700 focus:scale-98 active:bg-red-800 select-none">
         Dangerous Action
       </button>
-    </div>
-
-    <div class="flex gap-4 flex-wrap justify-center">
       <button type="button" id="stackDialogsBtn"
         class="px-4 py-3 text-center border border-gray-300 cursor-pointer rounded-md text-base bg-gray-50 transition-all duration-200 ease-out hover:bg-white hover:border-blue-600 focus:scale-98 active:bg-white select-none">
         Stack Multiple Dialogs
       </button>
-
       <button type="button" id="customConfirmationBtn"
         class="px-4 py-3 text-center border border-gray-300 cursor-pointer rounded-md text-base bg-gray-50 transition-all duration-200 ease-out hover:bg-white hover:border-blue-600 focus:scale-98 active:bg-white select-none">
         Custom Confirmation
       </button>
-
       <button type="button" id="longAlertBtn"
         class="px-4 py-3 text-center border border-gray-300 cursor-pointer rounded-md text-base bg-gray-50 transition-all duration-200 ease-out hover:bg-white hover:border-blue-600 focus:scale-98 active:bg-white select-none">
         Long Alert
       </button>
     </div>
+
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <script type="module" src="dialog.js"></script>
   <script type="module" src="main.js" defer></script>
 </body>
