@@ -5,6 +5,201 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="styles.css">
     <title>Web Alerts & Confirmations</title>
+    <style>
+      /*#region CSS Reset*/
+      *,
+      *::before,
+      *::after
+      {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html
+      {
+        -moz-text-size-adjust: none;
+        -webkit-text-size-adjust: none;
+        text-size-adjust: none;
+      }
+
+      body,
+      h1,
+      h2,
+      h3,
+      h4,
+      p,
+      figure,
+      blockquote,
+      dl,
+      dd
+      {
+        margin-block-end: 0;
+      }
+
+      ul[role="list"],
+      ol[role="list"]
+      {
+        list-style: none;
+      }
+
+      img,
+      picture,
+      video,
+      canvas,
+      svg
+      {
+        max-width: 100%;
+        display: block;
+      }
+
+      input,
+      button,
+      textarea,
+      select
+      {
+        font-family: inherit;
+        font-size: inherit;
+      }
+
+      textarea:not([rows])
+      {
+        min-height: 10em;
+      }
+
+      :target
+      {
+        scroll-margin-block: 5ex;
+      }
+
+      p
+      {
+        text-wrap: pretty;
+      }
+      /*#endregion CSS Reset*/
+
+      :root {
+          --body-background: #f8fafc;
+
+          --text-color-dark: #222222;
+          --text-color-light: #eeeeee;
+          --text-color-muted: #99a1af;
+              
+          --shadow-sm: 0 1px 2px #10182814;
+          --shadow-md: 0 6px 16px #1018281f;
+          --shadow-lg: 0 12px 24px #10182829;
+
+          --button-color-default: #f3f4f6;
+          --button-color-default-hover: #ffffff;
+          --button-color-default-active: #ffffff;
+          --button-color-primary: #2b7fff;
+          --button-color-primary-hover: #155dfb;
+          --button-color-primary-active: #1353dd;
+      }
+
+      body {
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+          background: var(--body-background);
+          color: #222222 !important;
+      }
+
+      main {
+          width: 100%;
+          height: 100svh;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+      }
+
+      main div {
+          display: flex;
+          gap: 1rem;
+      }
+
+      button {
+          padding: 0.9rem 1rem;
+          text-align: center;
+          appearance: none;
+          outline: none;
+          border: 1px solid #d1d5db;
+          cursor: pointer;
+          line-height: 1;
+          border-radius: 6px;
+          font-size: 1rem;
+          background-color: var(--button-color-default);
+          transition: all 0.2s ease-out;
+      }
+      button:hover {
+          background-color: var(--button-color-default-hover);
+          border-color: var(--button-color-primary);
+      }
+      button:active {
+          background-color: var(--button-color-default-active);
+      }
+
+      .buttonPrimary {
+          background-color: var(--button-color-primary);
+          border-color: var(--button-color-primary);
+          color: var(--text-color-light);
+      }
+      .buttonPrimary:hover {
+          background-color: var(--button-color-primary-hover);
+          border-color: var(--button-color-primary-hover);
+      }
+      .buttonPrimary:active {
+          background-color: var(--button-color-primary-active);
+      }
+
+      /*#region Dialogs*/
+      .dialogWrapper
+      {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        z-index: -100;
+        pointer-events: none;
+        transition: opacity 0.2s ease-out;
+      }
+
+      .dialog
+      {
+        background-color: #ffffff;
+        padding: 24px 28px;
+        border-radius: 16px;
+        box-shadow: 0 12px 24px var(--shadow-lg);
+        width: clamp(320px, 35vw, 512px);
+        text-align: center;
+        color: var(--text-color-dark);
+      }
+
+      .dialog h2
+      {
+        font-size: 1.5rem;
+        margin: 0 0 16px 0;
+        font-weight: 600;
+      }
+
+      .dialog p
+      {
+        margin: 0 0 24px 0;
+        color: var(--text-color-muted);
+      }
+
+      .dialog button {
+          width: 100%;
+      }
+
+      .dialogButtonGroup
+      {
+        display: flex;
+        gap: 1rem;
+      }
+      /*#endregion Dialogs*/
+    </style>
 </head>
 <body>
     <main>
@@ -30,6 +225,130 @@
         </div>
       </div>
     </div>
-    <script src="script.js"></script>
+    <script>
+      const confirmConfirmationDialogButton = document.getElementById('confirmConfirmationDialog');
+      const closeConfirmationDialogButton = document.getElementById('closeConfirmationDialog');
+      const closeAlertDialogButton = document.getElementById('closeAlertDialog');
+      const openAlertDialogButton = document.getElementById('openAlertDialogButton');
+      const openConfirmationDialogButton = document.getElementById('openConfirmationDialogButton');
+
+      let bodyScrollLockCount = 0;
+      let originalBodyOverflow = null;
+      let originalBodyPaddingRight = null;
+
+      function disableBodyScroll()
+      {
+        if (bodyScrollLockCount === 0)
+        {
+          originalBodyOverflow = document.body.style.overflow;
+          originalBodyPaddingRight = document.body.style.paddingRight;
+
+          const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+          document.body.style.overflow = 'hidden';
+
+          if (scrollBarWidth > 0)
+          {
+            const existing = parseFloat(getComputedStyle(document.body).paddingRight) || 0;
+            document.body.style.paddingRight = `${existing + scrollBarWidth}px`;
+          }
+        }
+        bodyScrollLockCount++;
+      }
+
+      function enableBodyScroll()
+      {
+        if (bodyScrollLockCount <= 0) 
+          return;
+
+        bodyScrollLockCount--;
+
+        if (bodyScrollLockCount === 0)
+        {
+          if (originalBodyOverflow !== null)
+          {
+            document.body.style.overflow = originalBodyOverflow;
+          } else
+          {
+            document.body.style.removeProperty('overflow');
+          }
+
+          if (originalBodyPaddingRight !== null && originalBodyPaddingRight !== '')
+          {
+            document.body.style.paddingRight = originalBodyPaddingRight;
+          } else
+          {
+            document.body.style.removeProperty('padding-right');
+          }
+
+          originalBodyOverflow = null;
+          originalBodyPaddingRight = null;
+        }
+      }
+
+      function toggleDialog(dialogId, dialogText = "", fadeTime = 200)
+      {
+        const dialog = document.getElementById(dialogId);
+
+        if (!dialog)
+        {
+          console.error(`Could not find dialog id of ${dialog}`);
+          alert(`Could not find dialog id of ${dialog}`);
+          return;
+        }
+
+        if (dialog.animation && dialog.animation.playState === 'running')
+          return;
+
+        const hidden = window.getComputedStyle(dialog).opacity == 0;
+
+        const keyframes = hidden ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 1 }, { opacity: 0 }];
+
+        if (hidden)
+        {
+          dialog.style.zIndex = '100';
+          dialog.style.pointerEvents = 'auto';
+          dialog.querySelector("p").textContent = dialogText;
+          disableBodyScroll();
+        } else
+        {
+          dialog.style.pointerEvents = 'none';
+        }
+
+        dialog.animation = dialog.animate(keyframes, {
+          duration: fadeTime,
+          easing: 'ease-out',
+          fill: 'forwards'
+        });
+
+        dialog.animation.finished.then(() =>
+        {
+          if (!hidden)
+          {
+            dialog.style.zIndex = '-100';
+            dialog.style.pointerEvents = 'none';
+            dialog.querySelector("p").textContent = dialogText;
+            enableBodyScroll();
+          }
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+          openAlertDialogButton.addEventListener('click', () => {
+              toggleDialog('alertDialog', 'This is simple alert dialog that can be used to alert the user of anything big or small.');
+          });
+          closeAlertDialogButton.addEventListener('click', () => {
+              toggleDialog('alertDialog');
+          });
+          openConfirmationDialogButton.addEventListener('click', () => {
+              toggleDialog('confirmationDialog', 'This is confirmation dialog that can be used to confirm that the user is absouluty sure of the action they are about to commit to.')
+          });
+          closeConfirmationDialogButton.addEventListener('click', () => {
+              toggleDialog('confirmationDialog');
+          });
+          confirmConfirmationDialogButton.addEventListener('click', () => {
+              toggleDialog('confirmationDialog');
+          });
+      });
+    </script>
 </body>
 </html>
