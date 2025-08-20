@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="styles.css">
-    <title>Web Alerts & Confirmations</title>
+    <title>Enhanced Web Dialogs</title>
     <style>
       /*#region CSS Reset*/
       *,
@@ -95,6 +94,9 @@
           --button-color-primary: #2b7fff;
           --button-color-primary-hover: #155dfb;
           --button-color-primary-active: #1353dd;
+          --button-color-danger: #dc2626;
+          --button-color-danger-hover: #b91c1c;
+          --button-color-danger-active: #991b1b;
       }
 
       body {
@@ -109,11 +111,14 @@
           display: flex;
           justify-content: center;
           align-items: center;
+          flex-direction: column;
+          gap: 2rem;
       }
 
-      main div {
+      .button-group {
           display: flex;
           gap: 1rem;
+          flex-wrap: wrap;
       }
 
       button {
@@ -150,6 +155,19 @@
           background-color: var(--button-color-primary-active);
       }
 
+      .buttonDanger {
+          background-color: var(--button-color-danger);
+          border-color: var(--button-color-danger);
+          color: var(--text-color-light);
+      }
+      .buttonDanger:hover {
+          background-color: var(--button-color-danger-hover);
+          border-color: var(--button-color-danger-hover);
+      }
+      .buttonDanger:active {
+          background-color: var(--button-color-danger-active);
+      }
+
       /*#region Dialogs*/
       .dialogWrapper
       {
@@ -174,6 +192,12 @@
         width: clamp(320px, 35vw, 512px);
         text-align: center;
         color: var(--text-color-dark);
+        transform: scale(0.9);
+        transition: transform 0.2s ease-out;
+      }
+
+      .dialogWrapper.active .dialog {
+        transform: scale(1);
       }
 
       .dialog h2
@@ -199,155 +223,319 @@
         gap: 1rem;
       }
       /*#endregion Dialogs*/
+
+      /* Stack indication */
+      .dialog-stack-indicator {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: bold;
+      }
     </style>
 </head>
 <body>
     <main>
-        <div>
-            <button type="button" id="openAlertDialogButton">Open Alert</button>
-            <button type="button" class="buttonPrimary" id="openConfirmationDialogButton">Open Confirmation</button>
+        <h1>Dialog System Demo</h1>
+        <div class="button-group">
+            <button type="button" id="simpleAlertBtn">Simple Alert</button>
+            <button type="button" class="buttonPrimary" id="basicConfirmationBtn">Basic Confirmation</button>
+            <button type="button" class="buttonDanger" id="dangerousActionBtn">Dangerous Action</button>
+        </div>
+        <div class="button-group">
+            <button type="button" id="stackDialogsBtn">Stack Multiple Dialogs</button>
+            <button type="button" id="customConfirmationBtn">Custom Confirmation</button>
+            <button type="button" id="longAlertBtn">Long Alert</button>
         </div>
     </main>
-    <div class="dialogWrapper" id="alertDialog">
-      <div class="dialog">
-        <h2>Alert Dialog</h2>
-        <p></p>
-        <button type="button" id="closeAlertDialog">Close</button>
-      </div>
-    </div>
-    <div class="dialogWrapper" id="confirmationDialog">
-      <div class="dialog">
-        <h2>Confirmation Alert</h2>
-        <p></p>
-        <div class="dialogButtonGroup">
-          <button type="button" id="closeConfirmationDialog">Close</button>
-          <button type="button" class="buttonPrimary" id="confirmConfirmationDialog">Confirm</button>
-        </div>
-      </div>
-    </div>
+
     <script>
-      const confirmConfirmationDialogButton = document.getElementById('confirmConfirmationDialog');
-      const closeConfirmationDialogButton = document.getElementById('closeConfirmationDialog');
-      const closeAlertDialogButton = document.getElementById('closeAlertDialog');
-      const openAlertDialogButton = document.getElementById('openAlertDialogButton');
-      const openConfirmationDialogButton = document.getElementById('openConfirmationDialogButton');
+      class DialogManager {
+        constructor() {
+          this.dialogStack = [];
+          this.dialogCounter = 0;
+          this.bodyScrollLockCount = 0;
+          this.originalBodyOverflow = null;
+          this.originalBodyPaddingRight = null;
+          this.baseZIndex = 1000;
+        }
 
-      let bodyScrollLockCount = 0;
-      let originalBodyOverflow = null;
-      let originalBodyPaddingRight = null;
+        disableBodyScroll() {
+          if (this.bodyScrollLockCount === 0) {
+            this.originalBodyOverflow = document.body.style.overflow;
+            this.originalBodyPaddingRight = document.body.style.paddingRight;
 
-      function disableBodyScroll()
-      {
-        if (bodyScrollLockCount === 0)
-        {
-          originalBodyOverflow = document.body.style.overflow;
-          originalBodyPaddingRight = document.body.style.paddingRight;
+            const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+            document.body.style.overflow = 'hidden';
 
-          const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
-          document.body.style.overflow = 'hidden';
+            if (scrollBarWidth > 0) {
+              const existing = parseFloat(getComputedStyle(document.body).paddingRight) || 0;
+              document.body.style.paddingRight = `${existing + scrollBarWidth}px`;
+            }
+          }
+          this.bodyScrollLockCount++;
+        }
 
-          if (scrollBarWidth > 0)
-          {
-            const existing = parseFloat(getComputedStyle(document.body).paddingRight) || 0;
-            document.body.style.paddingRight = `${existing + scrollBarWidth}px`;
+        enableBodyScroll() {
+          if (this.bodyScrollLockCount <= 0) return;
+
+          this.bodyScrollLockCount--;
+
+          if (this.bodyScrollLockCount === 0) {
+            if (this.originalBodyOverflow !== null) {
+              document.body.style.overflow = this.originalBodyOverflow;
+            } else {
+              document.body.style.removeProperty('overflow');
+            }
+
+            if (this.originalBodyPaddingRight !== null && this.originalBodyPaddingRight !== '') {
+              document.body.style.paddingRight = this.originalBodyPaddingRight;
+            } else {
+              document.body.style.removeProperty('padding-right');
+            }
+
+            this.originalBodyOverflow = null;
+            this.originalBodyPaddingRight = null;
           }
         }
-        bodyScrollLockCount++;
+
+        createDialog(title, message, buttons, options = {}) {
+          const dialogId = `dialog-${++this.dialogCounter}`;
+          const stackLevel = this.dialogStack.length + 1;
+          const zIndex = this.baseZIndex + stackLevel;
+
+          // Create dialog HTML
+          const dialogWrapper = document.createElement('div');
+          dialogWrapper.className = 'dialogWrapper';
+          dialogWrapper.id = dialogId;
+          dialogWrapper.style.zIndex = zIndex;
+
+          const buttonGroupClass = buttons.length > 1 ? 'dialogButtonGroup' : '';
+          const buttonsHtml = buttons.map(btn => 
+            `<button type="button" class="${btn.className || ''}" data-action="${btn.action}">${btn.text}</button>`
+          ).join('');
+
+          const stackIndicator = options.showStackIndicator !== false && stackLevel > 1 
+            ? `<div class="dialog-stack-indicator">${stackLevel}/${stackLevel}</div>` 
+            : '';
+
+          dialogWrapper.innerHTML = `
+            <div class="dialog">
+              ${stackIndicator}
+              <h2>${title}</h2>
+              <p>${message}</p>
+              <div class="${buttonGroupClass}">
+                ${buttonsHtml}
+              </div>
+            </div>
+          `;
+
+          document.body.appendChild(dialogWrapper);
+
+          // Add event listeners to buttons
+          const buttonElements = dialogWrapper.querySelectorAll('button[data-action]');
+          buttonElements.forEach(btn => {
+            const action = btn.getAttribute('data-action');
+            const buttonConfig = buttons.find(b => b.action === action);
+            
+            btn.addEventListener('click', () => {
+              if (buttonConfig.callback) {
+                const result = buttonConfig.callback();
+                // If callback returns false, don't close the dialog
+                if (result === false) return;
+              }
+              this.closeDialog(dialogId);
+            });
+          });
+
+          // Handle escape key for top dialog
+          const escapeHandler = (e) => {
+            if (e.key === 'Escape' && this.dialogStack[this.dialogStack.length - 1]?.id === dialogId) {
+              if (options.allowEscapeClose !== false) {
+                this.closeDialog(dialogId);
+              }
+            }
+          };
+          document.addEventListener('keydown', escapeHandler);
+
+          // Store dialog info
+          const dialogInfo = {
+            id: dialogId,
+            element: dialogWrapper,
+            escapeHandler,
+            onClose: options.onClose
+          };
+
+          this.dialogStack.push(dialogInfo);
+          this.disableBodyScroll();
+
+          // Show dialog with animation
+          requestAnimationFrame(() => {
+            dialogWrapper.style.opacity = '1';
+            dialogWrapper.style.pointerEvents = 'auto';
+            dialogWrapper.classList.add('active');
+          });
+
+          return dialogId;
+        }
+
+        closeDialog(dialogId) {
+          const dialogIndex = this.dialogStack.findIndex(d => d.id === dialogId);
+          if (dialogIndex === -1) return;
+
+          const dialogInfo = this.dialogStack[dialogIndex];
+          const { element, escapeHandler, onClose } = dialogInfo;
+
+          // Remove escape handler
+          document.removeEventListener('keydown', escapeHandler);
+
+          // Animate out
+          element.style.opacity = '0';
+          element.classList.remove('active');
+
+          setTimeout(() => {
+            document.body.removeChild(element);
+            this.enableBodyScroll();
+            
+            if (onClose) {
+              onClose();
+            }
+          }, 200);
+
+          // Remove from stack
+          this.dialogStack.splice(dialogIndex, 1);
+
+          // Update stack indicators
+          this.updateStackIndicators();
+        }
+
+        updateStackIndicators() {
+          this.dialogStack.forEach((dialog, index) => {
+            const indicator = dialog.element.querySelector('.dialog-stack-indicator');
+            if (indicator) {
+              const stackLevel = index + 1;
+              const totalDialogs = this.dialogStack.length;
+              indicator.textContent = `${stackLevel}/${totalDialogs}`;
+            }
+          });
+        }
+
+        showAlert(title, message, options = {}) {
+          const buttons = [
+            { 
+              text: options.closeText || 'Close', 
+              action: 'close',
+              className: options.closeClassName || ''
+            }
+          ];
+          return this.createDialog(title, message, buttons, options);
+        }
+
+        showConfirmation(title, message, onConfirm, options = {}) {
+          const buttons = [
+            { 
+              text: options.cancelText || 'Cancel', 
+              action: 'cancel',
+              className: options.cancelClassName || ''
+            },
+            { 
+              text: options.confirmText || 'Confirm', 
+              action: 'confirm',
+              className: options.confirmClassName || 'buttonPrimary',
+              callback: onConfirm
+            }
+          ];
+          return this.createDialog(title, message, buttons, options);
+        }
       }
 
-      function enableBodyScroll()
-      {
-        if (bodyScrollLockCount <= 0) 
-          return;
+      const dialogManager = new DialogManager();
 
-        bodyScrollLockCount--;
-
-        if (bodyScrollLockCount === 0)
-        {
-          if (originalBodyOverflow !== null)
-          {
-            document.body.style.overflow = originalBodyOverflow;
-          } else
-          {
-            document.body.style.removeProperty('overflow');
-          }
-
-          if (originalBodyPaddingRight !== null && originalBodyPaddingRight !== '')
-          {
-            document.body.style.paddingRight = originalBodyPaddingRight;
-          } else
-          {
-            document.body.style.removeProperty('padding-right');
-          }
-
-          originalBodyOverflow = null;
-          originalBodyPaddingRight = null;
-        }
+      function createAlert(title, message, options = {}) {
+        return dialogManager.showAlert(title, message, options);
       }
-
-      function toggleDialog(dialogId, dialogText = "", fadeTime = 200)
-      {
-        const dialog = document.getElementById(dialogId);
-
-        if (!dialog)
-        {
-          console.error(`Could not find dialog id of ${dialog}`);
-          alert(`Could not find dialog id of ${dialog}`);
-          return;
-        }
-
-        if (dialog.animation && dialog.animation.playState === 'running')
-          return;
-
-        const hidden = window.getComputedStyle(dialog).opacity == 0;
-
-        const keyframes = hidden ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 1 }, { opacity: 0 }];
-
-        if (hidden)
-        {
-          dialog.style.zIndex = '100';
-          dialog.style.pointerEvents = 'auto';
-          dialog.querySelector("p").textContent = dialogText;
-          disableBodyScroll();
-        } else
-        {
-          dialog.style.pointerEvents = 'none';
-        }
-
-        dialog.animation = dialog.animate(keyframes, {
-          duration: fadeTime,
-          easing: 'ease-out',
-          fill: 'forwards'
-        });
-
-        dialog.animation.finished.then(() =>
-        {
-          if (!hidden)
-          {
-            dialog.style.zIndex = '-100';
-            dialog.style.pointerEvents = 'none';
-            dialog.querySelector("p").textContent = dialogText;
-            enableBodyScroll();
-          }
-        });
+      function createConfirmationAlert(title, message, onConfirm, options = {}) {
+        return dialogManager.showConfirmation(title, message, onConfirm, options);
       }
 
       document.addEventListener('DOMContentLoaded', () => {
-          openAlertDialogButton.addEventListener('click', () => {
-              toggleDialog('alertDialog', 'This is simple alert dialog that can be used to alert the user of anything big or small.');
+        const simpleAlertBtn = document.getElementById('simpleAlertBtn');
+        simpleAlertBtn.addEventListener('click', () => {
+          createAlert('Simple Alert', 'This is a basic alert message.');
+        });
+
+        const basicConfirmationBtn = document.getElementById('basicConfirmationBtn');
+        basicConfirmationBtn.addEventListener('click', () => {
+          createConfirmationAlert('Confirm Action', 'Are you sure you want to proceed?', () => {
+            console.log('User confirmed the action!');
+            createAlert('Success', 'Action completed successfully!');
           });
-          closeAlertDialogButton.addEventListener('click', () => {
-              toggleDialog('alertDialog');
+        });
+
+        const dangerousActionBtn = document.getElementById('dangerousActionBtn');
+        dangerousActionBtn.addEventListener('click', () => {
+          createConfirmationAlert('Delete Everything?', 'This action cannot be undone. Are you absolutely sure?', () => {
+              console.log('Dangerous action confirmed!');
+              createAlert('Deleted', 'Everything has been deleted!');
+            },
+            {
+              confirmText: 'Delete',
+              confirmClassName: 'buttonDanger'
+            }
+          );
+        });
+
+        // Stack Dialogs Button
+        const stackDialogsBtn = document.getElementById('stackDialogsBtn');
+        stackDialogsBtn.addEventListener('click', () => {
+          createAlert('First Dialog', 'This is the first dialog in the stack.');
+          
+          setTimeout(() => {
+            createConfirmationAlert(
+              'Second Dialog', 
+              'This is stacked on top. Confirm to add another?',
+              () => {
+                createAlert('Third Dialog', 'This is the third dialog! You can stack as many as needed.');
+              }
+            );
+          }, 500);
+        });
+
+        // Custom Confirmation Button
+        const customConfirmationBtn = document.getElementById('customConfirmationBtn');
+        customConfirmationBtn.addEventListener('click', () => {
+          createConfirmationAlert(
+            'Custom Callback',
+            'This confirmation has a custom callback that shows another dialog.',
+            () => {
+              const shouldContinue = Math.random() > 0.5;
+              if (shouldContinue) {
+                createAlert('Random Success', 'The random check passed!');
+              } else {
+                createAlert('Random Failure', 'The random check failed. Try again!');
+              }
+            },
+            {
+              confirmText: 'Try Random Check',
+              confirmClassName: 'buttonPrimary'
+            }
+          );
+        });
+
+        // Long Alert Button
+        const longAlertBtn = document.getElementById('longAlertBtn');
+        longAlertBtn.addEventListener('click', () => {
+          const longMessage = 'This is a much longer alert message that demonstrates how the dialog handles more text content. It should wrap properly and maintain good readability even with extended content. The dialog system is flexible and can handle various content lengths while maintaining a clean, professional appearance.';
+          
+          createAlert('Long Content Alert', longMessage, {
+            closeText: 'Got it!',
+            closeClassName: 'buttonPrimary'
           });
-          openConfirmationDialogButton.addEventListener('click', () => {
-              toggleDialog('confirmationDialog', 'This is confirmation dialog that can be used to confirm that the user is absouluty sure of the action they are about to commit to.')
-          });
-          closeConfirmationDialogButton.addEventListener('click', () => {
-              toggleDialog('confirmationDialog');
-          });
-          confirmConfirmationDialogButton.addEventListener('click', () => {
-              toggleDialog('confirmationDialog');
-          });
+        });
       });
     </script>
 </body>
