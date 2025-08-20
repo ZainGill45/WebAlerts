@@ -1,542 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced Web Dialogs</title>
-    <style>
-      /*#region CSS Reset*/
-      *,
-      *::before,
-      *::after
-      {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <title>Enhanced Web Dialogs</title>
+  <style>
+    /*#region CSS Reset*/
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
 
-      html
-      {
-        -moz-text-size-adjust: none;
-        -webkit-text-size-adjust: none;
-        text-size-adjust: none;
-      }
+    html {
+      -moz-text-size-adjust: none;
+      -webkit-text-size-adjust: none;
+      text-size-adjust: none;
+    }
 
-      body,
-      h1,
-      h2,
-      h3,
-      h4,
-      p,
-      figure,
-      blockquote,
-      dl,
-      dd
-      {
-        margin-block-end: 0;
-      }
+    body,
+    h1,
+    h2,
+    h3,
+    h4,
+    p,
+    figure,
+    blockquote,
+    dl,
+    dd {
+      margin-block-end: 0;
+    }
 
-      ul[role="list"],
-      ol[role="list"]
-      {
-        list-style: none;
-      }
+    ul[role="list"],
+    ol[role="list"] {
+      list-style: none;
+    }
 
-      img,
-      picture,
-      video,
-      canvas,
-      svg
-      {
-        max-width: 100%;
-        display: block;
-      }
+    img,
+    picture,
+    video,
+    canvas,
+    svg {
+      max-width: 100%;
+      display: block;
+    }
 
-      input,
-      button,
-      textarea,
-      select
-      {
-        font-family: inherit;
-        font-size: inherit;
-      }
+    input,
+    button,
+    textarea,
+    select {
+      font-family: inherit;
+      font-size: inherit;
+    }
 
-      textarea:not([rows])
-      {
-        min-height: 10em;
-      }
+    textarea:not([rows]) {
+      min-height: 10em;
+    }
 
-      :target
-      {
-        scroll-margin-block: 5ex;
-      }
+    :target {
+      scroll-margin-block: 5ex;
+    }
 
-      p
-      {
-        text-wrap: pretty;
-      }
-      /*#endregion CSS Reset*/
-      
-      :root {
-          --body-background: #f8fafc;
-
-          --text-color-dark: #222222;
-          --text-color-light: #eeeeee;
-          --text-color-muted: #99a1af;
-              
-          --shadow-sm: 0 1px 2px #10182814;
-          --shadow-md: 0 6px 16px #1018281f;
-          --shadow-lg: 0 12px 24px #10182829;
-
-          --button-color-default: #fafafa;
-          --button-color-default-hover: #ffffff;
-          --button-color-default-active: #ffffff;
-          --button-color-primary: #2b7fff;
-          --button-color-primary-hover: #155dfb;
-          --button-color-primary-active: #1353dd;
-          --button-color-danger: #dc2626;
-          --button-color-danger-hover: #b91c1c;
-          --button-color-danger-active: #991b1b;
-      }
-
-      body {
-          font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-          background: var(--body-background);
-          color: #222222 !important;
-      }
-
-      main {
-          width: 100%;
-          height: 100svh;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          flex-direction: column;
-          gap: 2rem;
-      }
-
-      .button-group {
-          display: flex;
-          gap: 1rem;
-          flex-wrap: wrap;
-      }
-
-      button {
-          padding: 0.9rem 1rem;
-          text-align: center;
-          appearance: none;
-          outline: none;
-          border: 1px solid #d1d5db;
-          cursor: pointer;
-          line-height: 1;
-          border-radius: 6px;
-          font-size: 1rem;
-          background-color: var(--button-color-default);
-          transition: all 0.2s ease-out;
-      }
-      button:hover {
-          background-color: var(--button-color-default-hover);
-          border-color: var(--button-color-primary);
-      }
-      button:active {
-          background-color: var(--button-color-default-active);
-      }
-
-      .buttonPrimary {
-          background-color: var(--button-color-primary);
-          border-color: var(--button-color-primary);
-          color: var(--text-color-light);
-      }
-      .buttonPrimary:hover {
-          background-color: var(--button-color-primary-hover);
-          border-color: var(--button-color-primary-hover);
-      }
-      .buttonPrimary:active {
-          background-color: var(--button-color-primary-active);
-      }
-
-      .buttonDanger {
-          background-color: var(--button-color-danger);
-          border-color: var(--button-color-danger);
-          color: var(--text-color-light);
-      }
-      .buttonDanger:hover {
-          background-color: var(--button-color-danger-hover);
-          border-color: var(--button-color-danger-hover);
-      }
-      .buttonDanger:active {
-          background-color: var(--button-color-danger-active);
-      }
-
-      /*#region Dialogs*/
-      .dialogWrapper
-      {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        opacity: 0;
-        z-index: -100;
-        pointer-events: none;
-        transition: opacity 0.2s ease-out;
-      }
-
-      .dialog
-      {
-        background-color: #ffffff;
-        padding: 24px 28px;
-        border-radius: 16px;
-        box-shadow: 0 12px 24px var(--shadow-lg);
-        width: clamp(320px, 35vw, 512px);
-        text-align: center;
-        color: var(--text-color-dark);
-        transform: scale(0.9);
-        transition: transform 0.2s ease-out;
-      }
-
-      .dialogWrapper.active .dialog {
-        transform: scale(1);
-      }
-
-      .dialog h2
-      {
-        font-size: 1.5rem;
-        margin: 0 0 16px 0;
-        font-weight: 600;
-      }
-
-      .dialog p
-      {
-        margin: 0 0 24px 0;
-        color: var(--text-color-muted);
-      }
-
-      .dialog button {
-          width: 100%;
-      }
-
-      .dialogButtonGroup
-      {
-        display: flex;
-        gap: 1rem;
-      }
-
-      .dialog-stack-indicator {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        background: rgba(0, 0, 0, 0.7);
-        color: white;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        font-weight: bold;
-      }
-
-      /*#endregion Dialogs*/
-    </style>
+    p {
+      text-wrap: pretty;
+    }
+    /*#endregion CSS Reset*/
+  </style>
 </head>
-<body>
-    <main>
-        <h1>Dialog System</h1>
-        <div class="button-group">
-            <button type="button" id="simpleAlertBtn">Simple Alert</button>
-            <button type="button" class="buttonPrimary" id="basicConfirmationBtn">Basic Confirmation</button>
-            <button type="button" class="buttonDanger" id="dangerousActionBtn">Dangerous Action</button>
-        </div>
-        <div class="button-group">
-            <button type="button" id="stackDialogsBtn">Stack Multiple Dialogs</button>
-            <button type="button" id="customConfirmationBtn">Custom Confirmation</button>
-            <button type="button" id="longAlertBtn">Long Alert</button>
-        </div>
-    </main>
 
-    <script>
-      class DialogManager {
-        constructor() {
-          this.dialogStack = [];
-          this.dialogCounter = 0;
-          this.bodyScrollLockCount = 0;
-          this.originalBodyOverflow = null;
-          this.originalBodyPaddingRight = null;
-          this.baseZIndex = 1000;
-        }
+<body class="bg-slate-50 text-gray-900 font-sans">
+  <main class="w-full min-h-screen flex justify-center items-center flex-col gap-8">
+    <h1 class="text-3xl font-bold text-gray-800">Dialog System</h1>
 
-        disableBodyScroll() {
-          if (this.bodyScrollLockCount === 0) {
-            this.originalBodyOverflow = document.body.style.overflow;
-            this.originalBodyPaddingRight = document.body.style.paddingRight;
+    <div class="flex gap-4 flex-wrap justify-center">
+      <button type="button" id="simpleAlertBtn"
+        class="px-4 py-3 text-center border border-gray-300 cursor-pointer rounded-md text-base bg-gray-50 transition-all duration-200 ease-out hover:bg-white hover:border-blue-600 focus:scale-98 active:bg-white select-none">Simple
+        Alert</button>
 
-            const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
-            document.body.style.overflow = 'hidden';
+      <button type="button" id="basicConfirmationBtn"
+        class="px-4 py-3 text-center border border-blue-600 cursor-pointer rounded-md text-base bg-blue-600 text-white transition-all duration-200 ease-out hover:bg-blue-700 hover:border-blue-700 focus:scale-98 active:bg-blue-800 select-none">
+        Basic Confirmation
+      </button>
 
-            if (scrollBarWidth > 0) {
-              const existing = parseFloat(getComputedStyle(document.body).paddingRight) || 0;
-              document.body.style.paddingRight = `${existing + scrollBarWidth}px`;
-            }
-          }
-          this.bodyScrollLockCount++;
-        }
+      <button type="button" id="dangerousActionBtn"
+        class="px-4 py-3 text-center border border-red-600 cursor-pointer rounded-md text-base bg-red-600 text-white transition-all duration-200 ease-out hover:bg-red-700 hover:border-red-700 focus:scale-98 active:bg-red-800 select-none">
+        Dangerous Action
+      </button>
+    </div>
 
-        enableBodyScroll() {
-          if (this.bodyScrollLockCount <= 0) return;
+    <div class="flex gap-4 flex-wrap justify-center">
+      <button type="button" id="stackDialogsBtn"
+        class="px-4 py-3 text-center border border-gray-300 cursor-pointer rounded-md text-base bg-gray-50 transition-all duration-200 ease-out hover:bg-white hover:border-blue-600 focus:scale-98 active:bg-white select-none">
+        Stack Multiple Dialogs
+      </button>
 
-          this.bodyScrollLockCount--;
+      <button type="button" id="customConfirmationBtn"
+        class="px-4 py-3 text-center border border-gray-300 cursor-pointer rounded-md text-base bg-gray-50 transition-all duration-200 ease-out hover:bg-white hover:border-blue-600 focus:scale-98 active:bg-white select-none">
+        Custom Confirmation
+      </button>
 
-          if (this.bodyScrollLockCount === 0) {
-            if (this.originalBodyOverflow !== null) {
-              document.body.style.overflow = this.originalBodyOverflow;
-            } else {
-              document.body.style.removeProperty('overflow');
-            }
+      <button type="button" id="longAlertBtn"
+        class="px-4 py-3 text-center border border-gray-300 cursor-pointer rounded-md text-base bg-gray-50 transition-all duration-200 ease-out hover:bg-white hover:border-blue-600 focus:scale-98 active:bg-white select-none">
+        Long Alert
+      </button>
+    </div>
+  </main>
 
-            if (this.originalBodyPaddingRight !== null && this.originalBodyPaddingRight !== '') {
-              document.body.style.paddingRight = this.originalBodyPaddingRight;
-            } else {
-              document.body.style.removeProperty('padding-right');
-            }
-
-            this.originalBodyOverflow = null;
-            this.originalBodyPaddingRight = null;
-          }
-        }
-
-        createDialog(title, message, buttons, options = {}) {
-          const dialogId = `dialog-${++this.dialogCounter}`;
-          const stackLevel = this.dialogStack.length + 1;
-          const zIndex = this.baseZIndex + stackLevel;
-
-          // Create dialog HTML
-          const dialogWrapper = document.createElement('div');
-          dialogWrapper.className = 'dialogWrapper';
-          dialogWrapper.id = dialogId;
-          dialogWrapper.style.zIndex = zIndex;
-
-          const buttonGroupClass = buttons.length > 1 ? 'dialogButtonGroup' : '';
-          const buttonsHtml = buttons.map(btn => 
-            `<button type="button" class="${btn.className || ''}" data-action="${btn.action}">${btn.text}</button>`
-          ).join('');
-
-          const stackIndicator = options.showStackIndicator !== false && stackLevel > 1 
-            ? `<div class="dialog-stack-indicator">${stackLevel}/${stackLevel}</div>` 
-            : '';
-
-          dialogWrapper.innerHTML = `
-            <div class="dialog">
-              ${stackIndicator}
-              <h2>${title}</h2>
-              <p>${message}</p>
-              <div class="${buttonGroupClass}">
-                ${buttonsHtml}
-              </div>
-            </div>
-          `;
-
-          document.body.appendChild(dialogWrapper);
-
-          // Add event listeners to buttons
-          const buttonElements = dialogWrapper.querySelectorAll('button[data-action]');
-          buttonElements.forEach(btn => {
-            const action = btn.getAttribute('data-action');
-            const buttonConfig = buttons.find(b => b.action === action);
-            
-            btn.addEventListener('click', () => {
-              if (buttonConfig.callback) {
-                const result = buttonConfig.callback();
-                // If callback returns false, don't close the dialog
-                if (result === false) return;
-              }
-              this.closeDialog(dialogId);
-            });
-          });
-
-          // Handle escape key for top dialog
-          const escapeHandler = (e) => {
-            if (e.key === 'Escape' && this.dialogStack[this.dialogStack.length - 1]?.id === dialogId) {
-              if (options.allowEscapeClose !== false) {
-                this.closeDialog(dialogId);
-              }
-            }
-          };
-          document.addEventListener('keydown', escapeHandler);
-
-          // Store dialog info
-          const dialogInfo = {
-            id: dialogId,
-            element: dialogWrapper,
-            escapeHandler,
-            onClose: options.onClose
-          };
-
-          this.dialogStack.push(dialogInfo);
-          this.disableBodyScroll();
-
-          // Show dialog with animation
-          requestAnimationFrame(() => {
-            dialogWrapper.style.opacity = '1';
-            dialogWrapper.style.pointerEvents = 'auto';
-            dialogWrapper.classList.add('active');
-          });
-
-          return dialogId;
-        }
-
-        closeDialog(dialogId) {
-          const dialogIndex = this.dialogStack.findIndex(d => d.id === dialogId);
-          if (dialogIndex === -1) return;
-
-          const dialogInfo = this.dialogStack[dialogIndex];
-          const { element, escapeHandler, onClose } = dialogInfo;
-
-          // Remove escape handler
-          document.removeEventListener('keydown', escapeHandler);
-
-          // Animate out
-          element.style.opacity = '0';
-          element.classList.remove('active');
-
-          setTimeout(() => {
-            document.body.removeChild(element);
-            this.enableBodyScroll();
-            
-            if (onClose) {
-              onClose();
-            }
-          }, 200);
-
-          // Remove from stack
-          this.dialogStack.splice(dialogIndex, 1);
-
-          // Update stack indicators
-          this.updateStackIndicators();
-        }
-
-        updateStackIndicators() {
-          this.dialogStack.forEach((dialog, index) => {
-            const indicator = dialog.element.querySelector('.dialog-stack-indicator');
-            if (indicator) {
-              const stackLevel = index + 1;
-              const totalDialogs = this.dialogStack.length;
-              indicator.textContent = `${stackLevel}/${totalDialogs}`;
-            }
-          });
-        }
-
-        showAlert(title, message, options = {}) {
-          const buttons = [
-            { 
-              text: options.closeText || 'Close', 
-              action: 'close',
-              className: options.closeClassName || ''
-            }
-          ];
-          return this.createDialog(title, message, buttons, options);
-        }
-
-        showConfirmation(title, message, onConfirm, options = {}) {
-          const buttons = [
-            { 
-              text: options.cancelText || 'Cancel', 
-              action: 'cancel',
-              className: options.cancelClassName || ''
-            },
-            { 
-              text: options.confirmText || 'Confirm', 
-              action: 'confirm',
-              className: options.confirmClassName || 'buttonPrimary',
-              callback: onConfirm
-            }
-          ];
-          return this.createDialog(title, message, buttons, options);
-        }
-      }
-
-      const dialogManager = new DialogManager();
-
-      function createAlert(title, message, options = {}) {
-        return dialogManager.showAlert(title, message, options);
-      }
-      function createConfirmationAlert(title, message, onConfirm, options = {}) {
-        return dialogManager.showConfirmation(title, message, onConfirm, options);
-      }
-
-      document.addEventListener('DOMContentLoaded', () => {
-        const simpleAlertBtn = document.getElementById('simpleAlertBtn');
-        simpleAlertBtn.addEventListener('click', () => {
-          createAlert('Simple Alert', 'This is a basic alert message.');
-        });
-
-        const basicConfirmationBtn = document.getElementById('basicConfirmationBtn');
-        basicConfirmationBtn.addEventListener('click', () => {
-          createConfirmationAlert('Confirm Action', 'Are you sure you want to proceed?', () => {
-            console.log('User confirmed the action!');
-            createAlert('Success', 'Action completed successfully!');
-          });
-        });
-
-        const dangerousActionBtn = document.getElementById('dangerousActionBtn');
-        dangerousActionBtn.addEventListener('click', () => {
-          createConfirmationAlert('Delete Everything?', 'This action cannot be undone. Are you absolutely sure?', () => {
-              console.log('Dangerous action confirmed!');
-              createAlert('Deleted', 'Everything has been deleted!');
-            },
-            {
-              confirmText: 'Delete',
-              confirmClassName: 'buttonDanger'
-            }
-          );
-        });
-
-        // Stack Dialogs Button
-        const stackDialogsBtn = document.getElementById('stackDialogsBtn');
-        stackDialogsBtn.addEventListener('click', () => {
-          createAlert('First Dialog', 'This is the first dialog in the stack.');
-          
-          setTimeout(() => {
-            createConfirmationAlert(
-              'Second Dialog', 
-              'This is stacked on top. Confirm to add another?',
-              () => {
-                createAlert('Third Dialog', 'This is the third dialog! You can stack as many as needed.');
-              }
-            );
-          }, 500);
-        });
-
-        // Custom Confirmation Button
-        const customConfirmationBtn = document.getElementById('customConfirmationBtn');
-        customConfirmationBtn.addEventListener('click', () => {
-          createConfirmationAlert(
-            'Custom Callback',
-            'This confirmation has a custom callback that shows another dialog.',
-            () => {
-              const shouldContinue = Math.random() > 0.5;
-              if (shouldContinue) {
-                createAlert('Random Success', 'The random check passed!');
-              } else {
-                createAlert('Random Failure', 'The random check failed. Try again!');
-              }
-            },
-            {
-              confirmText: 'Try Random Check',
-              confirmClassName: 'buttonPrimary'
-            }
-          );
-        });
-
-        // Long Alert Button
-        const longAlertBtn = document.getElementById('longAlertBtn');
-        longAlertBtn.addEventListener('click', () => {
-          const longMessage = 'This is a much longer alert message that demonstrates how the dialog handles more text content. It should wrap properly and maintain good readability even with extended content. The dialog system is flexible and can handle various content lengths while maintaining a clean, professional appearance.';
-          
-          createAlert('Long Content Alert', longMessage, {
-            closeText: 'Got it!',
-            closeClassName: 'buttonPrimary'
-          });
-        });
-      });
-    </script>
+  <script type="module" src="dialog.js"></script>
+  <script type="module" src="main.js" defer></script>
 </body>
+
 </html>
